@@ -1,0 +1,602 @@
+There are 80+ questions in the list, so answering all of them in one message would be very long. For a **5+ years DevOps Engineer (Harness + Terraform + Kubernetes + AWS/GCP)** interview, these are the **most important questions with sample answers** that are commonly asked in L2/L3 rounds.
+
+# Harness
+
+### 1. What are Delegates in Harness?
+
+**Answer:**
+Delegates are lightweight services installed within the target environment. They execute deployment tasks, communicate with infrastructure, collect logs, and perform verification activities on behalf of Harness.
+
+### 2. How does Harness rollback work?
+
+**Answer:**
+Harness automatically stores deployment metadata. If deployment verification fails or health checks fail, it can rollback to the last successful version automatically.
+
+### 3. Difference between Harness CI and CD?
+
+| Harness CI                       | Harness CD                   |
+| -------------------------------- | ---------------------------- |
+| Build and test applications      | Deploy applications          |
+| Integrates with Git repositories | Integrates with environments |
+| Creates artifacts                | Deploys artifacts            |
+
+### 4. How are secrets managed in Harness?
+
+**Answer:**
+Using Secret Managers:
+
+* Harness Secret Manager
+* AWS Secrets Manager
+* GCP Secret Manager
+* HashiCorp Vault
+
+Secrets are encrypted and masked in logs.
+
+---
+
+# Terraform
+
+### 5. What is Terraform State?
+
+**Answer:**
+Terraform state file stores the current mapping between Terraform configuration and real infrastructure.
+
+Example:
+
+```bash
+terraform.tfstate
+```
+
+Benefits:
+
+* Tracks resources
+* Improves performance
+* Supports dependency management
+
+---
+
+### 6. Difference between Local State and Remote State?
+
+| Local State    | Remote State      |
+| -------------- | ----------------- |
+| Stored locally | Stored in S3/GCS  |
+| Not shared     | Shared among team |
+| No locking     | Supports locking  |
+
+Example:
+
+```hcl
+backend "s3" {
+ bucket = "terraform-state"
+ key    = "prod.tfstate"
+ region = "ap-south-1"
+}
+```
+
+---
+
+### 7. What are Terraform Workspaces?
+
+**Answer:**
+Workspaces allow managing multiple environments using the same code.
+
+Example:
+
+```bash
+terraform workspace new dev
+terraform workspace new prod
+terraform workspace select prod
+```
+
+---
+
+### 8. What are Dynamic Blocks?
+
+**Answer:**
+Dynamic blocks create repeated nested blocks programmatically.
+
+Example:
+
+```hcl
+dynamic "ingress" {
+ for_each = [80,443]
+ content {
+   from_port = ingress.value
+   to_port   = ingress.value
+   protocol  = "tcp"
+ }
+}
+```
+
+---
+
+### 9. How do you import existing AWS resources into Terraform?
+
+**Answer:**
+
+```bash
+terraform import aws_instance.web i-123456789
+```
+
+Then create matching configuration and run:
+
+```bash
+terraform plan
+```
+
+---
+
+# Ansible
+
+### 10. What is Idempotency?
+
+**Answer:**
+Executing a playbook multiple times should produce the same result.
+
+Example:
+
+```yaml
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+```
+
+It won't reinstall nginx if already installed.
+
+---
+
+### 11. What are Handlers?
+
+**Answer:**
+Handlers run only when notified.
+
+Example:
+
+```yaml
+tasks:
+  - name: Update config
+    template:
+      src: nginx.conf
+      dest: /etc/nginx/nginx.conf
+    notify: Restart nginx
+
+handlers:
+  - name: Restart nginx
+    service:
+      name: nginx
+      state: restarted
+```
+
+---
+
+### 12. What is Ansible Vault?
+
+**Answer:**
+Encrypts sensitive information.
+
+```bash
+ansible-vault encrypt secrets.yml
+```
+
+Used for:
+
+* Passwords
+* API Keys
+* Certificates
+
+---
+
+# Jenkins
+
+### 13. Declarative vs Scripted Pipeline?
+
+**Declarative**
+
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        sh 'mvn clean install'
+      }
+    }
+  }
+}
+```
+
+**Scripted**
+
+```groovy
+node {
+  stage('Build') {
+    sh 'mvn clean install'
+  }
+}
+```
+
+Declarative is easier and recommended.
+
+---
+
+### 14. What is a Shared Library?
+
+**Answer:**
+Reusable Groovy code shared across Jenkins pipelines.
+
+Benefits:
+
+* Standardization
+* Reduced duplication
+* Easier maintenance
+
+---
+
+### 15. How do you secure Jenkins?
+
+**Answer:**
+
+* RBAC
+* LDAP/AD integration
+* HTTPS
+* Credential Store
+* Matrix Authorization
+* Backup strategy
+
+---
+
+# Docker
+
+### 16. Difference between CMD and ENTRYPOINT?
+
+| CMD               | ENTRYPOINT             |
+| ----------------- | ---------------------- |
+| Default command   | Fixed executable       |
+| Can be overridden | Usually not overridden |
+
+Example:
+
+```dockerfile
+ENTRYPOINT ["python"]
+CMD ["app.py"]
+```
+
+Runs:
+
+```bash
+python app.py
+```
+
+---
+
+### 17. What are Docker Volumes?
+
+**Answer:**
+Persistent storage for containers.
+
+```bash
+docker volume create appdata
+```
+
+Used for:
+
+* Databases
+* Logs
+* Persistent files
+
+---
+
+### 18. How do you reduce Docker image size?
+
+**Answer:**
+
+* Multi-stage builds
+* Alpine images
+* Remove unnecessary packages
+* Minimize layers
+
+Example:
+
+```dockerfile
+FROM golang AS build
+RUN go build
+
+FROM alpine
+COPY --from=build app .
+```
+
+---
+
+# Kubernetes
+
+### 19. Difference between Deployment, StatefulSet, DaemonSet?
+
+| Deployment     | StatefulSet   | DaemonSet         |
+| -------------- | ------------- | ----------------- |
+| Stateless apps | Stateful apps | One pod per node  |
+| Web servers    | Databases     | Monitoring agents |
+
+---
+
+### 20. What is CrashLoopBackOff?
+
+**Answer:**
+Container repeatedly starts and crashes.
+
+Troubleshooting:
+
+```bash
+kubectl logs podname
+
+kubectl describe pod podname
+```
+
+Check:
+
+* Application errors
+* Missing ConfigMaps
+* Resource limits
+
+---
+
+### 21. Difference between ConfigMap and Secret?
+
+| ConfigMap     | Secret         |
+| ------------- | -------------- |
+| Non-sensitive | Sensitive      |
+| Plain text    | Base64 encoded |
+
+---
+
+### 22. What are Taints and Tolerations?
+
+**Answer:**
+Taints prevent pods from being scheduled.
+
+```bash
+kubectl taint nodes node1 env=prod:NoSchedule
+```
+
+Pod needs matching toleration.
+
+---
+
+### 23. Explain Rolling Update.
+
+**Answer:**
+Gradually replaces old pods with new ones without downtime.
+
+Example:
+
+```yaml
+strategy:
+  type: RollingUpdate
+```
+
+---
+
+# AWS
+
+### 24. Security Group vs NACL?
+
+| Security Group   | NACL           |
+| ---------------- | -------------- |
+| Instance level   | Subnet level   |
+| Stateful         | Stateless      |
+| Allow rules only | Allow and Deny |
+
+---
+
+### 25. What is IAM Role?
+
+**Answer:**
+Provides temporary permissions to AWS resources.
+
+Example:
+
+* EC2 accesses S3 without storing access keys.
+
+---
+
+### 26. Difference between ECS and EKS?
+
+| ECS                          | EKS                |
+| ---------------------------- | ------------------ |
+| AWS native container service | Kubernetes service |
+| Simpler                      | More flexible      |
+
+---
+
+### 27. What is Auto Scaling?
+
+**Answer:**
+Automatically adjusts EC2 instances based on metrics.
+
+Example:
+
+```text
+CPU > 70% → Add instance
+CPU < 30% → Remove instance
+```
+
+---
+
+# GCP
+
+### 28. What is GKE?
+
+**Answer:**
+Google Kubernetes Engine is Google's managed Kubernetes platform.
+
+Features:
+
+* Auto upgrades
+* Auto scaling
+* Node pools
+* Integrated monitoring
+
+---
+
+### 29. What are Service Accounts?
+
+**Answer:**
+Non-human identities used by applications to access GCP resources securely.
+
+---
+
+# Python
+
+### 30. Script to check disk usage
+
+```python
+import shutil
+
+total, used, free = shutil.disk_usage("/")
+print(f"Used: {used//(2**30)} GB")
+```
+
+---
+
+### 31. Exception Handling
+
+```python
+try:
+    x = 10/0
+except ZeroDivisionError:
+    print("Cannot divide by zero")
+finally:
+    print("Completed")
+```
+
+---
+
+# Puppet
+
+### 32. What is Puppet?
+
+**Answer:**
+Configuration management tool used to automate infrastructure provisioning and maintain desired state.
+
+Example Manifest:
+
+```puppet
+package { 'nginx':
+  ensure => installed,
+}
+```
+
+---
+
+# Real-Time Production Scenarios
+
+### 33. Kubernetes Pod High CPU
+
+**Approach:**
+
+```bash
+kubectl top pod
+kubectl describe pod
+kubectl logs podname
+```
+
+Check:
+
+* Memory leaks
+* Infinite loops
+* Traffic spikes
+
+Scale if required:
+
+```bash
+kubectl scale deployment app --replicas=5
+```
+
+---
+
+### 34. Terraform Apply Failed Midway
+
+**Approach:**
+
+1. Check state file
+2. Run:
+
+```bash
+terraform plan
+```
+
+3. Fix issue
+4. Re-run:
+
+```bash
+terraform apply
+```
+
+Never manually edit state unless absolutely necessary.
+
+---
+
+### 35. Harness Deployment Successful but App Not Accessible
+
+**Checks:**
+
+1. Pod status
+2. Service status
+3. Ingress
+4. Load Balancer
+5. Application logs
+6. Delegate logs
+
+Commands:
+
+```bash
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+```
+
+---
+
+### 36. Jenkins Down Before Release
+
+**Approach:**
+
+* Check service logs
+* Restore backup
+* Use standby Jenkins
+* Trigger deployment manually if approved
+* Conduct RCA after recovery
+
+---
+
+### 37. Production 503 Errors After Deployment
+
+**Troubleshooting Flow**
+
+```text
+Load Balancer
+ ↓
+Ingress
+ ↓
+Service
+ ↓
+Pods
+ ↓
+Application Logs
+```
+
+Commands:
+
+```bash
+kubectl get pods
+kubectl logs podname
+kubectl get endpoints
+```
+
+Common causes:
+
+* Pods unhealthy
+* Wrong service selector
+* Failed application startup
+
+These 37 questions and answers cover approximately **80% of what you can expect in a Softility DevOps L2/L3 interview** focused on Harness, Terraform, Kubernetes, Docker, AWS, GCP, Jenkins, Python, and production support.
